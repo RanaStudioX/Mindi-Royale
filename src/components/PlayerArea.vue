@@ -364,38 +364,38 @@ function onCardClick(card) {
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s ease;
-  opacity: 1 !important;
-  visibility: visible !important;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player-hand-card :deep(.playing-card) {
-  width: 3.125rem !important;
-  height: 4.375rem !important;
-  border-radius: 0.375rem !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  width: 3.125rem;
+  height: 4.375rem;
+  border-radius: 0.375rem;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player-hand-card :deep(.card-inner) {
-  display: flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player-hand-card :deep(.card-rank-top),
 .player-hand-card :deep(.card-rank-bottom) {
-  font-size: 0.625rem !important;
-  line-height: 1 !important;
-  padding: 0.125rem 0.25rem !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  font-size: 0.625rem;
+  line-height: 1;
+  padding: 0.125rem 0.25rem;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player-hand-card :deep(.card-suit-center) {
-  font-size: 1.25rem !important;
-  line-height: 1 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player-hand-card:hover:not(.card-disabled) {
