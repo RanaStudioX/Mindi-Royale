@@ -1,0 +1,27 @@
+{
+  "name": "mindi-royale",
+  "version": "1.0.0",
+  "description": "Premium Mindi (Mendikot) multiplayer card game web application",
+  "author": "Mindi Royale",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2024 Mindi Royale",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.7",
+    "firebase": "^10.11.0",
+    "bootstrap": "^5.3.3",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0"
+  }
+}
+
