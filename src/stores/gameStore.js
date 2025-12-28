@@ -82,12 +82,7 @@ export const useGameStore = defineStore('game', () => {
 
   function playCard(cardId) {
     if (!game.value) return { success: false, error: 'Game not initialized' }
-    let myIndex = -1
-    if (gameMode.value === 'single') {
-      myIndex = players.value.findIndex(p => p.isHuman && !p.isAI)
-    } else {
-      myIndex = players.value.findIndex(p => p.id === currentUser.value?.uid || (p.isHuman && !p.isAI))
-    }
+    const myIndex = getMyPlayerIndex()
     if (myIndex < 0) return { success: false, error: 'Player index not found' }
     if (!players.value[myIndex]) return { success: false, error: 'Player not found at index' }
     return game.value.playCard(cardId, myIndex)
@@ -95,24 +90,14 @@ export const useGameStore = defineStore('game', () => {
 
   function revealTrump() {
     if (!game.value) return { success: false, error: 'Game not initialized' }
-    let myIndex = -1
-    if (gameMode.value === 'single') {
-      myIndex = players.value.findIndex(p => p.isHuman && !p.isAI)
-    } else {
-      myIndex = players.value.findIndex(p => p.id === currentUser.value?.uid || (p.isHuman && !p.isAI))
-    }
+    const myIndex = getMyPlayerIndex()
     if (myIndex < 0) return { success: false, error: 'Player index not found' }
     return game.value.revealTrump(myIndex)
   }
 
   function selectTrump(suit) {
     if (!game.value || !currentPlayer.value) return false
-    let myIndex = -1
-    if (gameMode.value === 'single') {
-      myIndex = players.value.findIndex(p => p.isHuman && !p.isAI)
-    } else {
-      myIndex = players.value.findIndex(p => p.id === currentUser.value?.uid || (p.isHuman && !p.isAI))
-    }
+    const myIndex = getMyPlayerIndex()
     if (myIndex < 0) return false
     return game.value.selectTrump(suit, myIndex)
   }
