@@ -369,9 +369,9 @@ function onCardClick(card) {
 }
 
 .player-hand-card :deep(.playing-card) {
-  width: 3.125rem;
-  height: 4.375rem;
-  border-radius: 0.375rem;
+  width: 3.125rem !important;
+  height: 4.375rem !important;
+  border-radius: 0.375rem !important;
   opacity: 1;
   visibility: visible;
 }
