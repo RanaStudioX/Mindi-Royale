@@ -119,6 +119,8 @@
   font-weight: bold;
   opacity: 1 !important;
   visibility: visible !important;
+  position: relative;
+  z-index: 1;
 }
 
 .card-rank-top,
@@ -128,6 +130,10 @@
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
+  color: #1a1a1a !important;
+  font-weight: bold !important;
+  position: relative;
+  z-index: 2;
 }
 
 .card-rank-bottom {
@@ -143,16 +149,36 @@
   justify-content: center;
   opacity: 1 !important;
   visibility: visible !important;
+  position: relative;
+  z-index: 2;
+}
+
+.card-suit-center span {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: inherit !important;
+  line-height: 1 !important;
 }
 
 .suit-hearts,
 .suit-diamonds {
-  color: #e74c3c;
+  color: #e74c3c !important;
+}
+
+.suit-hearts span,
+.suit-diamonds span {
+  color: #e74c3c !important;
 }
 
 .suit-spades,
 .suit-clubs {
-  color: #1a1a1a;
+  color: #1a1a1a !important;
+}
+
+.suit-spades span,
+.suit-clubs span {
+  color: #1a1a1a !important;
 }
 
 @keyframes pulse {

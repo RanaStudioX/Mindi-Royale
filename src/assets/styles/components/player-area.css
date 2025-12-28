@@ -253,11 +253,35 @@
 }
 
 .player-hand-card .card-rank-top,
-.player-hand-card .card-rank-bottom,
-.player-hand-card .card-suit-center {
+.player-hand-card .card-rank-bottom {
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
+  color: #1a1a1a !important;
+  font-weight: bold !important;
+}
+
+.player-hand-card .card-suit-center {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+.player-hand-card .card-suit-center span {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: inherit !important;
+}
+
+.player-hand-card .suit-hearts span,
+.player-hand-card .suit-diamonds span {
+  color: #e74c3c !important;
+}
+
+.player-hand-card .suit-spades span,
+.player-hand-card .suit-clubs span {
+  color: #1a1a1a !important;
 }
 
 .player-hand-card:hover:not(.card-disabled) {
