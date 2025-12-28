@@ -20,12 +20,7 @@
           </div>
         </div>
         <div v-if="trumpSuit && trumpRevealed" class="trump-display">
-          Trump: <span :class="`suit-${trumpSuit}`">
-            <span v-if="trumpSuit === 'hearts'">♥</span>
-            <span v-else-if="trumpSuit === 'diamonds'">♦</span>
-            <span v-else-if="trumpSuit === 'spades'">♠</span>
-            <span v-else-if="trumpSuit === 'clubs'">♣</span>
-          </span>
+          Trump: <span :class="`suit-${trumpSuit}`">{{ getSuitSymbol(trumpSuit) }}</span>
         </div>
         <div v-else-if="hiddenCard && !trumpRevealed" class="trump-display">
           <span class="trump-hidden-badge">Trump: Hidden</span>
@@ -38,12 +33,7 @@
       <div class="trump-corner-indicator">
         <div v-if="trumpSuit && trumpRevealed" class="trump-indicator glass-panel">
           <div class="trump-label">Trump</div>
-          <div class="trump-suit" :class="`suit-${trumpSuit}`">
-            <span v-if="trumpSuit === 'hearts'">♥</span>
-            <span v-else-if="trumpSuit === 'diamonds'">♦</span>
-            <span v-else-if="trumpSuit === 'spades'">♠</span>
-            <span v-else-if="trumpSuit === 'clubs'">♣</span>
-          </div>
+          <div class="trump-suit" :class="`suit-${trumpSuit}`">{{ getSuitSymbol(trumpSuit) }}</div>
         </div>
         <div v-else-if="hiddenCard && !trumpRevealed" class="hidden-card-indicator glass-panel">
           <div class="hidden-card-label">Hidden Trump</div>
@@ -528,7 +518,6 @@ function startNextRound() {
   if (gameStore.game) {
     isLoading.value = true
     loadingMessage.value = 'Starting new round...'
-    flippedCards.value.clear()
     
     setTimeout(() => {
       gameStore.game.startNewRound()
