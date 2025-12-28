@@ -47,6 +47,11 @@ const props = defineProps({
   isFaceDown: {
     type: Boolean,
     default: false
+  },
+  size: {
+    type: String,
+    default: 'default',
+    validator: (value) => ['default', 'small'].includes(value)
   }
 })
 
@@ -57,6 +62,21 @@ const cardStyle = computed(() => {
   if (props.isTrump) {
     styles.border = '2px solid var(--accent-gold)'
     styles.boxShadow = '0 0 15px rgba(212, 175, 55, 0.5)'
+  }
+  if (props.size === 'small') {
+    styles['--card-width'] = '3.125rem'
+    styles['--card-height'] = '4.375rem'
+    styles['--card-border-radius'] = '0.375rem'
+    styles['--card-rank-font-size'] = '0.625rem'
+    styles['--card-suit-font-size'] = '1.25rem'
+    styles['--card-padding'] = '0.125rem 0.25rem'
+  } else {
+    styles['--card-width'] = '85px'
+    styles['--card-height'] = '119px'
+    styles['--card-border-radius'] = '12px'
+    styles['--card-rank-font-size'] = '16px'
+    styles['--card-suit-font-size'] = '32px'
+    styles['--card-padding'] = '8px'
   }
   return styles
 })
@@ -71,10 +91,10 @@ function handleClick() {
 
 <style scoped>
 .playing-card {
-  width: 85px;
-  height: 119px;
+  width: var(--card-width, 85px);
+  height: var(--card-height, 119px);
   background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
-  border-radius: 12px;
+  border-radius: var(--card-border-radius, 12px);
   cursor: pointer;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -88,6 +108,8 @@ function handleClick() {
   transform-style: preserve-3d;
   flex-shrink: 0;
   flex-grow: 0;
+  opacity: 1;
+  visibility: visible;
 }
 
 .playing-card:hover:not(.card-disabled) {
@@ -183,15 +205,19 @@ function handleClick() {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px;
+  padding: var(--card-padding, 8px);
   color: #1a1a1a;
   font-weight: bold;
+  opacity: 1;
+  visibility: visible;
 }
 
 .card-rank-top,
 .card-rank-bottom {
-  font-size: 16px;
+  font-size: var(--card-rank-font-size, 16px);
   line-height: 1;
+  opacity: 1;
+  visibility: visible;
 }
 
 .card-rank-bottom {
@@ -199,12 +225,14 @@ function handleClick() {
 }
 
 .card-suit-center {
-  font-size: 32px;
+  font-size: var(--card-suit-font-size, 32px);
   text-align: center;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 1;
+  visibility: visible;
 }
 
 .suit-hearts,

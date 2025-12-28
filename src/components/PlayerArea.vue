@@ -30,6 +30,7 @@
         :is-trump="card.suit === trumpSuit && trumpRevealed"
         :is-disabled="isDisabled"
         :is-face-down="false"
+        size="small"
         @click="onCardClick(card)"
         class="player-hand-card"
         :style="{ transform: `rotate(${(index - actualCards.length / 2) * 2}deg)` }"
@@ -359,43 +360,9 @@ function onCardClick(card) {
 }
 
 .player-hand-card {
-  width: 3.125rem;
-  height: 4.375rem;
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s ease;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.player-hand-card :deep(.playing-card) {
-  width: 3.125rem !important;
-  height: 4.375rem !important;
-  border-radius: 0.375rem !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.player-hand-card :deep(.card-inner) {
-  display: flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.player-hand-card :deep(.card-rank-top),
-.player-hand-card :deep(.card-rank-bottom) {
-  font-size: 0.625rem !important;
-  line-height: 1 !important;
-  padding: 0.125rem 0.25rem !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.player-hand-card :deep(.card-suit-center) {
-  font-size: 1.25rem !important;
-  line-height: 1 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
 }
 
 .player-hand-card:hover:not(.card-disabled) {
