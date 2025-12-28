@@ -103,21 +103,21 @@ function handleClick() {
 }
 
 .card-playable {
-  border: 3px solid var(--accent-green) !important;
-  box-shadow: 0 0 20px rgba(46, 204, 113, 0.7), 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  border: 3px solid var(--accent-green);
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.7), 0 6px 12px rgba(0, 0, 0, 0.4);
   animation: pulse 2s infinite;
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
 .card-disabled {
   opacity: 0.4;
-  cursor: not-allowed !important;
+  cursor: not-allowed;
   filter: grayscale(0.6);
   transform: scale(0.95);
 }
 
 .card-disabled:hover {
-  transform: scale(0.95) !important;
+  transform: scale(0.95);
 }
 
 .card-face-down {
