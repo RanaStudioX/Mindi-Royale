@@ -109,6 +109,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore.js'
 import { useAuthStore } from '../stores/authStore.js'
 import { roomService } from '../utils/roomService.js'
+import { getPlayerInitial } from '../utils/profileIcons.js'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 
 const route = useRoute()
