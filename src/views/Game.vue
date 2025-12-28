@@ -303,18 +303,14 @@ watch(() => [gameState.value.currentPlayerIndex, gameState.value.gameState, game
 
 function getPlayerPosition(index) {
   const positions = ['top', 'right', 'bottom', 'left']
-  
-  if (gameStore.gameMode === 'single') {
-    const myIndex = gameStore.players.findIndex(p => p.isHuman && !p.isAI)
-    if (myIndex === -1) return positions[index]
-    const offset = (index - myIndex + 4) % 4
-    return positions[offset]
-  } else {
-    const myIndex = gameStore.players.findIndex(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI))
-    if (myIndex === -1) return positions[index]
-    const offset = (index - myIndex + 4) % 4
-    return positions[offset]
-  }
+  const myIndex = gameStore.players.findIndex(p => 
+    gameStore.gameMode === 'single' 
+      ? (p.isHuman && !p.isAI)
+      : (p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI))
+  )
+  if (myIndex === -1) return positions[index]
+  const offset = (index - myIndex + 4) % 4
+  return positions[offset]
 }
 
 function getTricksWon(playerIndex) {
