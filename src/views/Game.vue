@@ -1,0 +1,977 @@
+<template>
+  <div class="game-page">
+    <LoadingSpinner 
+      :show="isLoading" 
+      :message="loadingMessage"
+      :fullscreen="true"
+    />
+    
+    <div class="game-header glass-panel">
+      <div class="game-info">
+        <div class="round-info">Round {{ roundNumber }}</div>
+        <div class="teams-info">
+          <div class="team-info team-1">
+            <span>Team 1:</span>
+            <span>{{ gameState.teamTens?.[0] || 0 }}/4 tens | {{ gameState.teamScores?.[0] || 0 }} tricks</span>
+          </div>
+          <div class="team-info team-2">
+            <span>Team 2:</span>
+            <span>{{ gameState.teamTens?.[1] || 0 }}/4 tens | {{ gameState.teamScores?.[1] || 0 }} tricks</span>
+          </div>
+        </div>
+        <div v-if="trumpSuit && trumpRevealed" class="trump-display">
+          Trump: <span :class="`suit-${trumpSuit}`">
+            <span v-if="trumpSuit === 'hearts'">♥</span>
+            <span v-else-if="trumpSuit === 'diamonds'">♦</span>
+            <span v-else-if="trumpSuit === 'spades'">♠</span>
+            <span v-else-if="trumpSuit === 'clubs'">♣</span>
+          </span>
+        </div>
+        <div v-else-if="hiddenCard && !trumpRevealed" class="trump-display">
+          <span class="trump-hidden-badge">Trump: Hidden</span>
+        </div>
+      </div>
+      <button @click="leaveGame" class="leave-game-btn">Leave Game</button>
+    </div>
+    
+    <div class="game-board">
+      <div class="trump-corner-indicator">
+        <div v-if="trumpSuit && trumpRevealed" class="trump-indicator glass-panel">
+          <div class="trump-label">Trump</div>
+          <div class="trump-suit" :class="`suit-${trumpSuit}`">
+            <span v-if="trumpSuit === 'hearts'">♥</span>
+            <span v-else-if="trumpSuit === 'diamonds'">♦</span>
+            <span v-else-if="trumpSuit === 'spades'">♠</span>
+            <span v-else-if="trumpSuit === 'clubs'">♣</span>
+          </div>
+        </div>
+        <div v-else-if="hiddenCard && !trumpRevealed" class="hidden-card-indicator glass-panel">
+          <div class="hidden-card-label">Hidden Trump</div>
+          <div class="hidden-card-back">
+            <div class="card-back-pattern"></div>
+          </div>
+        </div>
+      </div>
+      
+      <GameTable 
+        :current-trick="currentTrick" 
+        :trump-suit="trumpSuit" 
+        :hidden-card="hiddenCard"
+        :trump-revealed="trumpRevealed"
+        :players="gameStore.players"
+        :get-player-position="getPlayerPosition"
+      />
+      
+      <PlayerArea
+        v-for="(player, index) in gameStore.players"
+        :key="player.id"
+        :player="player"
+        :position="getPlayerPosition(index)"
+        :is-current-turn="gameState.currentPlayerIndex === index"
+        :tricks-won="getTricksWon(index)"
+        :score="gameState.scores[index]"
+        :hide-a-i-badge="gameStore.gameMode === 'single'"
+        :show-actual-cards="player.id === currentPlayer?.id && sortedHand.length > 0"
+        :actual-cards="player.id === currentPlayer?.id ? sortedHand : null"
+        :is-card-playable="player.id === currentPlayer?.id ? isCardPlayable : null"
+        :handle-card-click="player.id === currentPlayer?.id ? handleCardClick : null"
+        :is-disabled="!isMyTurn || gameState.gameState !== 'playing'"
+        :trump-suit="trumpSuit"
+        :trump-revealed="trumpRevealed"
+        :flipped-cards="flippedCards"
+      />
+    </div>
+    
+    <div v-if="gameState.gameState === 'playing' && isMyTurn && hiddenCard && !trumpRevealed && currentTrick.length > 0 && currentPlayer && currentPlayer.hand && !currentPlayer.hand.some(c => c.suit === currentTrick[0]?.card?.suit)" class="trump-reveal-prompt glass-panel">
+      <h3>Cannot Follow Suit</h3>
+      <p class="instruction-text">You cannot follow suit. Click the button below to reveal the hidden trump card, then you can play any card.</p>
+      <button @click="revealTrumpCard" class="btn btn-primary" :disabled="isProcessingAction">
+        {{ isProcessingAction ? 'Revealing...' : 'Reveal Trump Card' }}
+      </button>
+    </div>
+    
+    <div v-if="gameState.gameState === 'selecting_trump' && isMyTurn" class="trump-selection glass-panel">
+      <h3>Select Trump Suit</h3>
+      <div class="suit-buttons">
+        <button
+          v-for="suit in ['hearts', 'diamonds', 'clubs', 'spades']"
+          :key="suit"
+          @click="selectTrump(suit)"
+          class="btn btn-secondary suit-btn"
+        >
+          <span :class="`suit-${suit}`">
+            <span v-if="suit === 'hearts'">♥</span>
+            <span v-else-if="suit === 'diamonds'">♦</span>
+            <span v-else-if="suit === 'spades'">♠</span>
+            <span v-else-if="suit === 'clubs'">♣</span>
+          </span>
+          {{ suit }}
+        </button>
+      </div>
+    </div>
+    
+    
+    <div v-if="gameState.gameState === 'mendikot'" class="round-summary glass-panel mendikot-win">
+      <h2>🎉 MENDIKOT! 🎉</h2>
+      <h3>Team {{ gameState.winnerTeam === 0 ? '1' : '2' }} captured all 4 tens!</h3>
+      <div class="scores-list">
+        <div class="team-scores">
+          <div class="team-score">
+            <h4>Team 1 (Players 1 & 3)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[0] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[0] || 0 }} tricks</span>
+            </div>
+          </div>
+          <div class="team-score">
+            <h4>Team 2 (Players 2 & 4)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[1] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[1] || 0 }} tricks</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button @click="startNextRound" class="btn btn-primary">New Round</button>
+    </div>
+    
+    <div v-if="gameState.gameState === 'whitewash'" class="round-summary glass-panel whitewash-win">
+      <h2>🏆 52-CARD MENDIKOT! 🏆</h2>
+      <h3>Team {{ gameState.winnerTeam === 0 ? '1' : '2' }} won all 13 tricks!</h3>
+      <div class="scores-list">
+        <div class="team-scores">
+          <div class="team-score">
+            <h4>Team 1 (Players 1 & 3)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[0] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[0] || 0 }} tricks</span>
+            </div>
+          </div>
+          <div class="team-score">
+            <h4>Team 2 (Players 2 & 4)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[1] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[1] || 0 }} tricks</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button @click="startNextRound" class="btn btn-primary">New Round</button>
+    </div>
+    
+    <div v-if="gameState.gameState === 'round_complete'" class="round-summary glass-panel">
+      <h3>Round Complete!</h3>
+      <div v-if="gameState.roundWinner !== undefined" class="round-winner">
+        <h4>Team {{ gameState.roundWinner === 0 ? '1' : '2' }} Wins!</h4>
+      </div>
+      <div class="scores-list">
+        <div class="team-scores">
+          <div class="team-score">
+            <h4>Team 1 (Players 1 & 3)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[0] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[0] || 0 }} tricks</span>
+            </div>
+          </div>
+          <div class="team-score">
+            <h4>Team 2 (Players 2 & 4)</h4>
+            <div class="team-stats">
+              <span>{{ gameState.teamTens?.[1] || 0 }}/4 tens</span>
+              <span>{{ gameState.teamScores?.[1] || 0 }} tricks</span>
+            </div>
+          </div>
+        </div>
+        <div class="player-details">
+          <div v-for="(player, index) in gameStore.players" :key="index" class="score-item">
+            <span>{{ player.name }}</span>
+            <span>{{ gameState.scores[index] }} tricks | {{ gameState.tensCaptured?.[index] || 0 }} tens</span>
+          </div>
+        </div>
+      </div>
+      <button @click="startNextRound" class="btn btn-primary">Next Round</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted, TransitionGroup } from 'vue'
+import { useRouter } from 'vue-router'
+import { useGameStore } from '../stores/gameStore.js'
+import { sortCards, getValidCards } from '../utils/cards.js'
+import { soundManager } from '../utils/sounds.js'
+import Card from '../components/Card.vue'
+import PlayerArea from '../components/PlayerArea.vue'
+import GameTable from '../components/GameTable.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import gsap from 'gsap'
+
+const router = useRouter()
+const gameStore = useGameStore()
+
+const gameStateRef = ref(null)
+
+const gameState = computed(() => {
+  if (gameStore.game) {
+    const state = gameStore.game.getGameState()
+    gameStateRef.value = state
+    return state
+  }
+  return gameStateRef.value || {
+    gameState: 'waiting',
+    currentPlayerIndex: 0,
+    currentTrick: [],
+    scores: [0, 0, 0, 0],
+    tensCaptured: [0, 0, 0, 0],
+    teamScores: [0, 0],
+    teamTens: [0, 0],
+    trumpSuit: null,
+    hiddenCard: null,
+    trumpRevealed: false,
+    roundNumber: 0,
+    teams: [[0, 2], [1, 3]]
+  }
+})
+
+const displayedTrick = ref([])
+const currentTrick = computed(() => {
+  if (displayedTrick.value.length > 0) {
+    return displayedTrick.value
+  }
+  return gameState.value.currentTrick || []
+})
+const trumpSuit = computed(() => gameState.value.trumpSuit)
+const trumpRevealed = computed(() => gameState.value.trumpRevealed || false)
+const hiddenCard = computed(() => gameState.value.hiddenCard)
+const roundNumber = computed(() => gameState.value.roundNumber || 0)
+const currentPlayer = computed(() => {
+  if (gameStore.gameMode === 'single') {
+    return gameStore.players.find(p => p.isHuman && !p.isAI) || gameStore.players[0]
+  } else {
+    const player = gameStore.currentPlayer
+    if (!player && gameStore.players && gameStore.players.length > 0) {
+      return gameStore.players.find(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI)) || gameStore.players[0]
+    }
+    return player
+  }
+})
+
+const isMyTurn = computed(() => {
+  if (!gameStore.game) return false
+  const state = gameStore.game.getGameState()
+  if (!state) return false
+  
+  let myIndex = -1
+  if (gameStore.gameMode === 'single') {
+    myIndex = gameStore.players.findIndex(p => p.isHuman && !p.isAI)
+  } else {
+    myIndex = gameStore.players.findIndex(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI))
+  }
+  
+  if (myIndex < 0) return false
+  
+  return state.currentPlayerIndex === myIndex
+})
+
+const sortedHand = computed(() => {
+  if (!currentPlayer.value?.hand) return []
+  return sortCards(currentPlayer.value.hand, trumpSuit.value)
+})
+
+const flippedCards = ref(new Set())
+const isLoading = ref(false)
+const loadingMessage = ref('')
+const isProcessingAction = ref(false)
+
+let aiInterval = null
+
+onMounted(() => {
+  if (!gameStore.game) {
+    router.push('/menu')
+    return
+  }
+  
+  isLoading.value = true
+  loadingMessage.value = 'Dealing cards...'
+  
+  setTimeout(() => {
+    soundManager.playSound('deal')
+    isLoading.value = false
+    loadingMessage.value = ''
+    
+    if (gameStore.gameMode === 'single') {
+      startAIChecker()
+      setTimeout(() => {
+        gameStore.processAITurn()
+      }, 1000)
+    }
+    
+    animateCards()
+  }, 800)
+})
+
+onUnmounted(() => {
+  if (aiInterval) {
+    clearInterval(aiInterval)
+  }
+})
+
+watch(() => [gameState.value.currentPlayerIndex, gameState.value.gameState, gameState.value.trumpRevealed], ([newIndex, newState, trumpRevealed]) => {
+  const newGameState = gameStore.game?.getGameState()
+  if (newGameState) {
+    if (newGameState.currentTrick && newGameState.currentTrick.length > 0) {
+      displayedTrick.value = newGameState.currentTrick
+    }
+    gameStateRef.value = newGameState
+  }
+  if (gameStore.gameMode === 'single') {
+    if (newState === 'playing' || newState === 'selecting_trump') {
+      if (newIndex >= 0 && newIndex < gameStore.players.length) {
+        const currentPlayer = gameStore.players[newIndex]
+        if (currentPlayer && currentPlayer.isAI) {
+          setTimeout(() => {
+            gameStore.processAITurn()
+          }, 1000)
+        }
+      }
+    }
+  }
+}, { immediate: false })
+
+watch(() => sortedHand.value, (newHand) => {
+  if (newHand && newHand.length > 0) {
+    newHand.forEach(card => {
+      if (!flippedCards.value.has(card.id)) {
+        flippedCards.value.add(card.id)
+      }
+    })
+  }
+}, { immediate: true })
+
+watch(() => gameState.value.currentPlayerIndex, () => {
+  if (isMyTurn.value) {
+    sortedHand.value.forEach(card => {
+      if (!flippedCards.value.has(card.id)) {
+        flippedCards.value.add(card.id)
+      }
+    })
+  }
+})
+
+function getPlayerPosition(index) {
+  const positions = ['top', 'right', 'bottom', 'left']
+  
+  if (gameStore.gameMode === 'single') {
+    const myIndex = gameStore.players.findIndex(p => p.isHuman && !p.isAI)
+    if (myIndex === -1) return positions[index]
+    const offset = (index - myIndex + 4) % 4
+    return positions[offset]
+  } else {
+    const myIndex = gameStore.players.findIndex(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI))
+    if (myIndex === -1) return positions[index]
+    const offset = (index - myIndex + 4) % 4
+    return positions[offset]
+  }
+}
+
+function getTricksWon(playerIndex) {
+  if (!gameStore.game) return 0
+  const history = gameStore.game.trickHistory || []
+  return history.filter(t => t.winner === playerIndex).length
+}
+
+function isCardPlayable(card) {
+  if (!isMyTurn.value) {
+    return false
+  }
+  if (gameState.value.gameState !== 'playing') {
+    return false
+  }
+  if (!currentPlayer.value?.hand || !card) {
+    return false
+  }
+  
+  if (currentTrick.value.length === 0) {
+    return true
+  }
+  
+  const leadCard = currentTrick.value[0]?.card
+  if (!leadCard) {
+    return true
+  }
+  
+  const leadSuit = leadCard.suit
+  const hasLeadSuit = currentPlayer.value.hand.some(c => c.suit === leadSuit)
+  
+  if (hasLeadSuit) {
+    return card.suit === leadSuit
+  }
+  
+  if (trumpRevealed.value && trumpSuit.value) {
+    const hasTrump = currentPlayer.value.hand.some(c => c.suit === trumpSuit.value)
+    if (hasTrump) {
+      return card.suit === trumpSuit.value
+    }
+  }
+  
+  if (hiddenCard.value && !trumpRevealed.value) {
+    return false
+  }
+  
+  return true
+}
+
+function handleCardClick(card) {
+  if (!card || !card.id) {
+    return
+  }
+  
+  if (!isMyTurn.value) {
+    return
+  }
+  
+  if (gameState.value.gameState !== 'playing') {
+    return
+  }
+  
+  if (isProcessingAction.value) {
+    return
+  }
+  
+  if (hiddenCard.value && !trumpRevealed.value && currentTrick.value.length > 0) {
+    const leadCard = currentTrick.value[0]?.card
+    if (leadCard && currentPlayer.value?.hand && !currentPlayer.value.hand.some(c => c.suit === leadCard.suit)) {
+      alert('You cannot follow suit. Please reveal the hidden trump card first.')
+      return
+    }
+  }
+  
+  isProcessingAction.value = true
+  
+  const result = gameStore.playCard(card.id)
+  
+  if (result && result.success) {
+    const newState = gameStore.game.getGameState()
+    displayedTrick.value = newState.currentTrick || []
+    gameStateRef.value = newState
+    soundManager.playSound('play')
+    if (result.trickComplete) {
+      setTimeout(() => {
+        soundManager.playSound('win')
+        setTimeout(() => {
+          const finalState = gameStore.game.getGameState()
+          gameStateRef.value = finalState
+          setTimeout(() => {
+            displayedTrick.value = []
+            isProcessingAction.value = false
+          }, 500)
+        }, 4500)
+      }, 1500)
+    } else {
+      gameStateRef.value = newState
+      isProcessingAction.value = false
+    }
+  } else if (result && result.canRevealTrump) {
+    alert('You cannot follow suit. Please reveal the hidden trump card first.')
+    isProcessingAction.value = false
+  } else {
+    if (result && result.error) {
+      alert(result.error)
+    }
+    isProcessingAction.value = false
+  }
+}
+
+function revealTrumpCard() {
+  if (isProcessingAction.value) return
+  
+  isProcessingAction.value = true
+  const result = gameStore.revealTrump()
+  if (result && result.success) {
+    soundManager.playSound('play')
+    gameStateRef.value = gameStore.game.getGameState()
+    setTimeout(() => {
+      gameStateRef.value = gameStore.game.getGameState()
+      isProcessingAction.value = false
+    }, 100)
+  } else {
+    if (result && result.error) {
+      alert(result.error)
+    }
+    isProcessingAction.value = false
+  }
+}
+
+function selectTrump(suit) {
+  if (gameStore.selectTrump(suit)) {
+    soundManager.playSound('play')
+  }
+}
+
+function startAIChecker() {
+  if (aiInterval) {
+    clearInterval(aiInterval)
+  }
+  
+  aiInterval = setInterval(() => {
+    if (!gameStore.game) return
+    
+    const state = gameStore.game.getGameState()
+    if (state && (state.gameState === 'selecting_trump' || state.gameState === 'playing')) {
+      if (gameStore.gameMode === 'single') {
+        const currentPlayerIndex = state.currentPlayerIndex
+        if (currentPlayerIndex >= 0 && currentPlayerIndex < gameStore.players.length) {
+          const currentPlayer = gameStore.players[currentPlayerIndex]
+          if (currentPlayer && currentPlayer.isAI) {
+            gameStore.processAITurn()
+          }
+        }
+      }
+    }
+  }, 1000)
+}
+
+function animateCards() {
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.playing-card')
+    if (cards.length > 0) {
+      gsap.from('.playing-card', {
+        y: 100,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.05,
+        ease: 'back.out(1.7)'
+      })
+    }
+  }, 100)
+}
+
+function startNextRound() {
+  if (gameStore.game) {
+    isLoading.value = true
+    loadingMessage.value = 'Starting new round...'
+    flippedCards.value.clear()
+    
+    setTimeout(() => {
+      gameStore.game.startNewRound()
+      soundManager.playSound('shuffle')
+      isLoading.value = false
+      loadingMessage.value = ''
+      animateCards()
+    }, 500)
+  }
+}
+
+function leaveGame() {
+  gameStore.resetGame()
+  router.push('/menu')
+}
+</script>
+
+<style scoped>
+.game-page {
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+}
+
+.game-header {
+  padding: 18px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: rgba(15, 20, 40, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.game-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.teams-info {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.team-info {
+  padding: 10px 16px;
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.team-info.team-1 {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.25) 0%, rgba(74, 144, 226, 0.15) 100%);
+  border: 1.5px solid rgba(74, 144, 226, 0.6);
+  color: #a8d5ff;
+}
+
+.team-info.team-1:hover {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.35) 0%, rgba(74, 144, 226, 0.25) 100%);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.team-info.team-2 {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.25) 0%, rgba(231, 76, 60, 0.15) 100%);
+  border: 1.5px solid rgba(231, 76, 60, 0.6);
+  color: #ffb3b3;
+}
+
+.team-info.team-2:hover {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.35) 0%, rgba(231, 76, 60, 0.25) 100%);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.trump-hidden-badge {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-left: 8px;
+}
+
+.round-info {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.trump-display {
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leave-game-btn {
+  padding: 10px 20px;
+  background: rgba(231, 76, 60, 0.2);
+  border: 1.5px solid rgba(231, 76, 60, 0.5);
+  border-radius: 10px;
+  color: #ffb3b3;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.leave-game-btn:hover {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: rgba(231, 76, 60, 0.7);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+  transform: translateY(-1px);
+}
+
+.leave-game-btn:active {
+  transform: translateY(0);
+}
+
+.suit-hearts,
+.suit-diamonds {
+  color: #e74c3c;
+  font-size: 20px;
+}
+
+.suit-spades,
+.suit-clubs {
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.game-board {
+  flex: 1;
+  position: relative;
+  min-height: 500px;
+  margin-bottom: 100px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, rgba(20, 25, 45, 0.7) 0%, rgba(10, 14, 30, 0.9) 100%);
+  backdrop-filter: blur(15px);
+  border: 1.5px solid rgba(212, 175, 55, 0.15);
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.6), 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.trump-corner-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.trump-indicator {
+  padding: 12px 20px;
+  text-align: center;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  border-radius: 12px;
+  min-width: 100px;
+}
+
+.trump-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trump-suit {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.hidden-card-indicator {
+  padding: 12px 16px;
+  text-align: center;
+  border: 2px solid rgba(212, 175, 55, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  min-width: 100px;
+}
+
+.hidden-card-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hidden-card-back {
+  width: 50px;
+  height: 70px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid var(--accent-gold);
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hidden-card-back .card-back-pattern {
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1) 0px,
+      rgba(255, 255, 255, 0.1) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.1) 0px,
+      rgba(255, 255, 255, 0.1) 2px,
+      transparent 2px,
+      transparent 8px
+    );
+  position: relative;
+  border-radius: 4px;
+}
+
+.hidden-card-back .card-back-pattern::before {
+  content: '🃏';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  opacity: 0.4;
+}
+
+.trump-selection,
+.trump-reveal-prompt {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 40px;
+  z-index: 1000;
+  text-align: center;
+  max-width: 90%;
+}
+
+.instruction-text {
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.card-selection {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.mendikot-win {
+  border: 3px solid var(--accent-gold);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+}
+
+.mendikot-win h2 {
+  font-size: 36px;
+  color: var(--accent-gold);
+  margin-bottom: 16px;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+
+.team-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.team-score {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-score h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: var(--accent-blue);
+}
+
+.team-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team-stats span {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.round-winner {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(46, 204, 113, 0.2);
+  border-radius: 8px;
+  border: 2px solid var(--accent-green);
+}
+
+.round-winner h4 {
+  margin: 0;
+  color: var(--accent-green);
+  font-size: 20px;
+}
+
+.player-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.whitewash-win {
+  border: 3px solid var(--accent-blue);
+  box-shadow: 0 0 40px rgba(74, 144, 226, 0.9);
+}
+
+.whitewash-win h2 {
+  font-size: 40px;
+  color: var(--accent-blue);
+  margin-bottom: 16px;
+  text-shadow: 0 0 25px rgba(74, 144, 226, 0.8);
+}
+
+.trump-selection h3 {
+  margin-bottom: 24px;
+  font-size: 24px;
+}
+
+.suit-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.suit-btn {
+  padding: 16px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+
+.round-summary {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 40px;
+  z-index: 1000;
+  min-width: 300px;
+}
+
+.round-summary h3 {
+  margin-bottom: 24px;
+  text-align: center;
+  font-size: 24px;
+}
+
+.scores-list {
+  margin-bottom: 24px;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.score-item:last-child {
+  border-bottom: none;
+}
+
+
+@media (max-width: 768px) {
+  .game-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .game-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .suit-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
