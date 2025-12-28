@@ -78,7 +78,6 @@
         :is-disabled="!isMyTurn || gameState.gameState !== 'playing'"
         :trump-suit="trumpSuit"
         :trump-revealed="trumpRevealed"
-        :flipped-cards="flippedCards"
       />
     </div>
     
@@ -277,7 +276,6 @@ const sortedHand = computed(() => {
   return sortCards(currentPlayer.value.hand, trumpSuit.value)
 })
 
-const flippedCards = ref(new Set())
 const isLoading = ref(false)
 const loadingMessage = ref('')
 const isProcessingAction = ref(false)
@@ -337,25 +335,6 @@ watch(() => [gameState.value.currentPlayerIndex, gameState.value.gameState, game
   }
 }, { immediate: false })
 
-watch(() => sortedHand.value, (newHand) => {
-  if (newHand && newHand.length > 0) {
-    newHand.forEach(card => {
-      if (!flippedCards.value.has(card.id)) {
-        flippedCards.value.add(card.id)
-      }
-    })
-  }
-}, { immediate: true })
-
-watch(() => gameState.value.currentPlayerIndex, () => {
-  if (isMyTurn.value) {
-    sortedHand.value.forEach(card => {
-      if (!flippedCards.value.has(card.id)) {
-        flippedCards.value.add(card.id)
-      }
-    })
-  }
-})
 
 function getPlayerPosition(index) {
   const positions = ['top', 'right', 'bottom', 'left']
