@@ -236,6 +236,28 @@
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.player-hand-card .playing-card {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.player-hand-card .card-inner {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+.player-hand-card .card-rank-top,
+.player-hand-card .card-rank-bottom,
+.player-hand-card .card-suit-center {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
 }
 
 .player-hand-card:hover:not(.card-disabled) {
