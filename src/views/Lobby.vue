@@ -49,7 +49,7 @@
               :key="player.id || index"
               class="player-slot glass-panel"
             >
-              <div class="player-avatar">{{ getInitial(player.name) }}</div>
+              <div class="player-avatar">{{ getPlayerInitial(player.name) }}</div>
               <div class="player-name">{{ player.name }}</div>
               <div v-if="player.isHost || player.id === hostId" class="host-badge">Host</div>
             </div>
@@ -288,9 +288,6 @@ function subscribeToRoomUpdates(code) {
   })
 }
 
-function getInitial(name) {
-  return name ? name.charAt(0).toUpperCase() : '?'
-}
 
 async function copyCode() {
   try {
