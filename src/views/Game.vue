@@ -193,6 +193,7 @@ import PlayerArea from '../components/PlayerArea.vue'
 import GameTable from '../components/GameTable.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import gsap from 'gsap'
+import '../assets/styles/views/game.css'
 
 const router = useRouter()
 const gameStore = useGameStore()
