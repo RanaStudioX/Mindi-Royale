@@ -232,34 +232,9 @@ const trumpSuit = computed(() => gameState.value.trumpSuit)
 const trumpRevealed = computed(() => gameState.value.trumpRevealed || false)
 const hiddenCard = computed(() => gameState.value.hiddenCard)
 const roundNumber = computed(() => gameState.value.roundNumber || 0)
-const currentPlayer = computed(() => {
-  if (gameStore.gameMode === 'single') {
-    return gameStore.players.find(p => p.isHuman && !p.isAI) || gameStore.players[0]
-  } else {
-    const player = gameStore.currentPlayer
-    if (!player && gameStore.players && gameStore.players.length > 0) {
-      return gameStore.players.find(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI)) || gameStore.players[0]
-    }
-    return player
-  }
-})
+const currentPlayer = computed(() => gameStore.currentPlayer)
 
-const isMyTurn = computed(() => {
-  if (!gameStore.game) return false
-  const state = gameStore.game.getGameState()
-  if (!state) return false
-  
-  let myIndex = -1
-  if (gameStore.gameMode === 'single') {
-    myIndex = gameStore.players.findIndex(p => p.isHuman && !p.isAI)
-  } else {
-    myIndex = gameStore.players.findIndex(p => p.id === gameStore.currentUser?.uid || (p.isHuman && !p.isAI))
-  }
-  
-  if (myIndex < 0) return false
-  
-  return state.currentPlayerIndex === myIndex
-})
+const isMyTurn = computed(() => gameStore.isMyTurn)
 
 const sortedHand = computed(() => {
   if (!currentPlayer.value?.hand) return []
