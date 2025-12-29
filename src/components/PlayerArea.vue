@@ -1,27 +1,51 @@
 <template>
   <div :class="['player-area', `position-${position}`, { 'is-current-turn': isCurrentTurn, 'is-winner': isWinner }]">
-    <div class="player-info glass-panel">
-      <div class="player-avatar-icon" :style="{ background: profileIcon.color.bg, color: profileIcon.color.text }">
+    <div class="player-info">
+      <div class="player-avatar-icon" 
+           :style="{ background: profileIcon.color.bg, color: profileIcon.color.text }">
         {{ profileIcon.icon }}
       </div>
       <div class="player-info-content">
         <div class="player-name">{{ player.name }}</div>
         <div class="player-stats">
-          <span class="tricks-won">{{ tricksWon }} tricks</span>
-          <span class="team-badge" :class="`team-${getTeamNumber()}`">Team {{ getTeamNumber() }}</span>
+          <div class="tricks-counter">
+            <div class="trick-cards-display">
+              <div 
+                v-for="n in Math.min(tricksWon, 13)" 
+                :key="n"
+                class="trick-card-icon"
+                :style="{ animationDelay: `${n * 0.1}s` }"
+              >
+                <i class="bi bi-suit-spade-fill"></i>
+              </div>
+            </div>
+            <div class="tricks-count-wrapper">
+              <span class="tricks-number" :key="tricksWon">{{ tricksWon }}</span>
+              <span class="tricks-label">tricks</span>
+            </div>
+          </div>
+          <span class="team-badge" :class="`team-${getTeamNumber()}`">T{{ getTeamNumber() }}</span>
         </div>
         <div v-if="isCurrentTurn" class="turn-indicator">
-          <div class="pulse-dot"></div>
-          <span v-if="player.isAI">
-            <span class="thinking-spinner"></span>
-            Thinking...
+          <span v-if="player.isAI" class="d-flex align-items-center thinking-container">
+            <div class="thinking-orb">
+              <div class="orb-core"></div>
+              <div class="orb-ring orb-ring-1"></div>
+              <div class="orb-ring orb-ring-2"></div>
+              <div class="orb-ring orb-ring-3"></div>
+              <div class="orb-particle orb-particle-1"></div>
+              <div class="orb-particle orb-particle-2"></div>
+              <div class="orb-particle orb-particle-3"></div>
+            </div>
           </span>
-          <span v-else>Your Turn</span>
+          <span v-else class="d-flex align-items-center">
+            <span class="pulse-dot me-1"></span>
+            <span>Your Turn</span>
+          </span>
         </div>
       </div>
-      <div v-if="player.isAI && !hideAIBadge" class="ai-badge">AI</div>
     </div>
-    <div v-if="showActualCards && actualCards" class="player-cards">
+    <div v-if="showActualCards && actualCards && actualCards.length > 0" class="player-cards">
       <Card
         v-for="(card, index) in actualCards"
         :key="card.id"
@@ -33,14 +57,14 @@
         size="small"
         @click="onCardClick(card)"
         class="player-hand-card"
-        :style="{ transform: `rotate(${(index - actualCards.length / 2) * 2}deg)` }"
+        :style="{ transform: `rotate(${(index - actualCards.length / 2) * 1}deg)` }"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch, ref, nextTick } from 'vue'
 import Card from './Card.vue'
 import { getProfileIcon } from '../utils/profileIcons.js'
 import '../assets/styles/components/player-area.css'
@@ -65,14 +89,6 @@ const props = defineProps({
   tricksWon: {
     type: Number,
     default: 0
-  },
-  score: {
-    type: Number,
-    default: 0
-  },
-  hideAIBadge: {
-    type: Boolean,
-    default: false
   },
   showActualCards: {
     type: Boolean,
@@ -101,13 +117,13 @@ const props = defineProps({
   trumpRevealed: {
     type: Boolean,
     default: false
-  },
-  flippedCards: {
-    type: Object,
-    default: null
   }
 })
 
+function onCardClick(card) {
+  if (!props.handleCardClick) return
+  props.handleCardClick(card)
+}
 
 const profileIcon = computed(() => {
   return getProfileIcon(props.player.id, props.player.name)
@@ -118,9 +134,22 @@ function getTeamNumber() {
   return playerIndex % 2 === 0 ? 1 : 2
 }
 
-function onCardClick(card) {
-  if (!props.handleCardClick) return
-  props.handleCardClick(card)
-}
+// Watch for tricks changes to trigger animation
+const prevTricks = ref(props.tricksWon)
+watch(() => props.tricksWon, (newTricks, oldTricks) => {
+  if (newTricks > oldTricks) {
+    // Trigger celebration animation
+    nextTick(() => {
+      const counter = document.querySelector(`.player-area.position-${props.position} .tricks-counter`)
+      if (counter) {
+        counter.classList.add('trick-celebration')
+        setTimeout(() => {
+          counter.classList.remove('trick-celebration')
+        }, 1000)
+      }
+    })
+  }
+  prevTricks.value = newTricks
+})
 </script>
 
