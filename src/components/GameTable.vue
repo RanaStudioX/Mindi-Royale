@@ -57,7 +57,6 @@ const props = defineProps({
 })
 
 function getCardPosition(trickCard, index) {
-  // Always center cards in the middle of the table with bigger spread
   const totalCards = props.currentTrick.length
   
   if (totalCards === 1) {
@@ -69,7 +68,6 @@ function getCardPosition(trickCard, index) {
     }
   }
   
-  // Spread cards around center for better visibility - bigger radius
   const radius = totalCards === 2 ? 45 : totalCards === 3 ? 60 : 75
   const angle = (index * (360 / totalCards)) * (Math.PI / 180)
   const x = Math.cos(angle) * radius

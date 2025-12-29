@@ -134,11 +134,9 @@ function getTeamNumber() {
   return playerIndex % 2 === 0 ? 1 : 2
 }
 
-// Watch for tricks changes to trigger animation
 const prevTricks = ref(props.tricksWon)
 watch(() => props.tricksWon, (newTricks, oldTricks) => {
   if (newTricks > oldTricks) {
-    // Trigger celebration animation
     nextTick(() => {
       const counter = document.querySelector(`.player-area.position-${props.position} .tricks-counter`)
       if (counter) {

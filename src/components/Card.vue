@@ -105,7 +105,6 @@ function handleClick(event) {
     return
   }
   
-  // Create ripple effect
   showRipple.value = true
   const card = event.currentTarget
   const rect = card.getBoundingClientRect()
@@ -118,7 +117,6 @@ function handleClick(event) {
     ripple.style.top = `${y}px`
   }
   
-  // Click animation
   isClicked.value = true
   setTimeout(() => {
     isClicked.value = false
