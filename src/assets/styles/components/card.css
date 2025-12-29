@@ -1,17 +1,19 @@
 .playing-card {
   width: var(--card-width, 85px);
   height: var(--card-height, 119px);
-  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%);
   border-radius: var(--card-border-radius, 12px);
   cursor: pointer;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 
-    0 6px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
   user-select: none;
   margin: 0;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  border: 2.5px solid rgba(0, 0, 0, 0.12);
   backface-visibility: hidden;
   transform-style: preserve-3d;
   flex-shrink: 0;
@@ -19,25 +21,219 @@
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
+  z-index: 55;
+  overflow: hidden;
+  will-change: transform, box-shadow, filter;
+  perspective: 1000px;
+}
+
+/* Advanced particle effect on hover */
+.playing-card:hover:not(.card-disabled)::before {
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+    rgba(255, 255, 255, 0.5) 0%, 
+    rgba(212, 175, 55, 0.3) 25%, 
+    rgba(212, 175, 55, 0.1) 50%, 
+    transparent 70%);
+}
+
+.playing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+    rgba(255, 255, 255, 0.4) 0%, 
+    rgba(212, 175, 55, 0.2) 30%, 
+    transparent 70%);
+  border-radius: var(--card-border-radius, 12px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.playing-card:hover::before {
+  opacity: 1;
+}
+
+.playing-card::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, 
+    transparent 30%,
+    rgba(212, 175, 55, 0.3) 50%,
+    transparent 70%);
+  border-radius: var(--card-border-radius, 12px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+  background-size: 200% 200%;
+  animation: borderShine 2s linear infinite;
+}
+
+.playing-card:hover:not(.card-disabled)::after {
+  opacity: 1;
+}
+
+@keyframes borderShine {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+.playing-card.card-clicked {
+  animation: cardClickBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cardClickBounce {
+  0% {
+    transform: translateY(-12px) scale(1.08) rotateY(5deg);
+  }
+  30% {
+    transform: translateY(-16px) scale(1.12) rotateY(-3deg);
+  }
+  60% {
+    transform: translateY(-14px) scale(1.1) rotateY(2deg);
+  }
+  100% {
+    transform: translateY(-12px) scale(1.08) rotateY(5deg);
+  }
+}
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  pointer-events: none;
+  animation: ripple 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(25);
+    opacity: 0;
+  }
 }
 
 .playing-card:hover:not(.card-disabled) {
-  transform: translateY(-16px) scale(1.12);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-  z-index: 10;
+  transform: translateY(-12px) scale(1.08) rotateY(5deg) !important;
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 0 25px rgba(212, 175, 55, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  z-index: 100 !important;
+  filter: brightness(1.15) saturate(1.1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.playing-card:active:not(.card-disabled) {
+  transform: translateY(-6px) scale(1.03) !important;
+  transition: all 0.1s ease-out;
 }
 
 .card-selected {
-  transform: translateY(-16px) scale(1.1);
-  box-shadow: 0 0 25px rgba(74, 144, 226, 0.8);
-  border: 2px solid var(--accent-blue);
+  transform: translateY(-10px) scale(1.06) rotateY(3deg);
+  box-shadow: 
+    0 0 30px rgba(74, 144, 226, 0.8),
+    0 8px 20px rgba(74, 144, 226, 0.4),
+    0 0 40px rgba(74, 144, 226, 0.3);
+  border: 3px solid var(--accent-blue);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: selectedPulse 2s ease-in-out infinite;
+}
+
+@keyframes selectedPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 30px rgba(74, 144, 226, 0.8),
+      0 8px 20px rgba(74, 144, 226, 0.4),
+      0 0 40px rgba(74, 144, 226, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 40px rgba(74, 144, 226, 1),
+      0 12px 28px rgba(74, 144, 226, 0.6),
+      0 0 50px rgba(74, 144, 226, 0.5);
+  }
 }
 
 .card-playable {
   border: 3px solid var(--accent-green);
-  box-shadow: 0 0 20px rgba(46, 204, 113, 0.7), 0 6px 12px rgba(0, 0, 0, 0.4);
-  animation: pulse 2s infinite;
+  box-shadow: 
+    0 0 20px rgba(46, 204, 113, 0.6),
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 0 15px rgba(46, 204, 113, 0.2);
   cursor: pointer;
+  position: relative;
+  animation: playableGlow 2s ease-in-out infinite;
+}
+
+.card-playable::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, 
+    rgba(46, 204, 113, 0.8) 0%,
+    rgba(46, 204, 113, 0.4) 25%,
+    rgba(46, 204, 113, 0.8) 50%,
+    rgba(46, 204, 113, 0.4) 75%,
+    rgba(46, 204, 113, 0.8) 100%);
+  border-radius: var(--card-border-radius, 12px);
+  z-index: -1;
+  animation: playableBorder 2s linear infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes playableGlow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(46, 204, 113, 0.6),
+      0 6px 16px rgba(0, 0, 0, 0.4),
+      inset 0 0 15px rgba(46, 204, 113, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(46, 204, 113, 0.9),
+      0 8px 20px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(46, 204, 113, 0.3);
+  }
+}
+
+@keyframes playableBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 .card-disabled {
@@ -52,13 +248,22 @@
 }
 
 .card-face-down {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1419 100%);
   cursor: pointer;
+  border: 2.5px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(212, 175, 55, 0.1);
 }
 
 .card-face-down:hover:not(.card-disabled) {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  transform: translateY(-6px) scale(1.04) rotateY(3deg);
+  box-shadow: 
+    0 10px 24px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(212, 175, 55, 0.3),
+    inset 0 0 25px rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .card-face-down .card-inner {
@@ -73,8 +278,9 @@
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 10px;
+  border-radius: var(--card-border-radius, 12px);
   overflow: hidden;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1419 100%);
 }
 
 .card-back-pattern {
@@ -83,19 +289,30 @@
   background: 
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.1) 0px,
-      rgba(255, 255, 255, 0.1) 2px,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 2px,
       transparent 2px,
-      transparent 8px
+      transparent 12px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0.1) 0px,
-      rgba(255, 255, 255, 0.1) 2px,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 2px,
       transparent 2px,
-      transparent 8px
-    );
+      transparent 12px
+    ),
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
   position: relative;
+  animation: backPatternMove 20s linear infinite;
+}
+
+@keyframes backPatternMove {
+  0% {
+    background-position: 0 0, 0 0, 50% 50%;
+  }
+  100% {
+    background-position: 20px 20px, -20px -20px, 50% 50%;
+  }
 }
 
 .card-back-pattern::before {
@@ -104,8 +321,42 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 32px;
-  opacity: 0.3;
+  font-size: 36px;
+  opacity: 0.4;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+  animation: backIconFloat 3s ease-in-out infinite;
+}
+
+@keyframes backIconFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+.card-back-pattern::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+  animation: backGlow 4s ease-in-out infinite;
+}
+
+@keyframes backGlow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .card-inner {
@@ -120,7 +371,9 @@
   opacity: 1 !important;
   visibility: visible !important;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  border-radius: var(--card-border-radius, 12px);
 }
 
 .card-rank-top,
@@ -131,9 +384,21 @@
   visibility: visible !important;
   display: block !important;
   color: #1a1a1a !important;
-  font-weight: bold !important;
+  font-weight: 900 !important;
   position: relative;
-  z-index: 2;
+  z-index: 3;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 0 1px rgba(255, 255, 255, 0.5);
+  letter-spacing: -0.5px;
+  transition: text-shadow 0.3s ease;
+}
+
+.playing-card:hover .card-rank-top,
+.playing-card:hover .card-rank-bottom {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 3px rgba(212, 175, 55, 0.4);
 }
 
 .card-rank-bottom {
@@ -150,7 +415,13 @@
   opacity: 1 !important;
   visibility: visible !important;
   position: relative;
-  z-index: 2;
+  z-index: 3;
+  transition: filter 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.playing-card:hover .card-suit-center {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(212, 175, 55, 0.3));
 }
 
 .card-suit-center span {
@@ -166,9 +437,13 @@
   color: #e74c3c !important;
 }
 
-.suit-hearts span,
-.suit-diamonds span {
+.suit-hearts .suit-icon,
+.suit-diamonds .suit-icon {
   color: #e74c3c !important;
+  text-shadow: 
+    0 0 10px rgba(231, 76, 60, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: suitPulse 2s ease-in-out infinite;
 }
 
 .suit-spades,
@@ -176,9 +451,76 @@
   color: #1a1a1a !important;
 }
 
-.suit-spades span,
-.suit-clubs span {
+.suit-spades .suit-icon,
+.suit-clubs .suit-icon {
   color: #1a1a1a !important;
+  text-shadow: 
+    0 0 8px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: suitPulse 2s ease-in-out infinite;
+}
+
+@keyframes suitPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+.trump-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #1a1a1a;
+  box-shadow: 
+    0 2px 8px rgba(255, 215, 0, 0.7),
+    inset 0 1px 3px rgba(255, 255, 255, 0.6),
+    0 0 12px rgba(255, 215, 0, 0.5);
+  animation: trumpBadgeGlow 2s ease-in-out infinite;
+  z-index: 10;
+  border: 1.5px solid rgba(255, 215, 0, 0.8);
+}
+
+.trump-badge i {
+  animation: starRotate 3s linear infinite;
+}
+
+@keyframes trumpBadgeGlow {
+  0%, 100% {
+    box-shadow: 
+      0 2px 8px rgba(255, 215, 0, 0.7),
+      inset 0 1px 3px rgba(255, 255, 255, 0.6),
+      0 0 12px rgba(255, 215, 0, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 12px rgba(255, 215, 0, 0.9),
+      inset 0 2px 4px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 215, 0, 0.7);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes starRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
