@@ -80,6 +80,13 @@ export const useGameStore = defineStore('game', () => {
     return game.value.startNewRound()
   }
 
+  function getMyPlayerIndex() {
+    if (gameMode.value === 'single') {
+      return players.value.findIndex(p => p.isHuman && !p.isAI)
+    }
+    return players.value.findIndex(p => p.id === currentUser.value?.uid || (p.isHuman && !p.isAI))
+  }
+
   function playCard(cardId) {
     if (!game.value) return { success: false, error: 'Game not initialized' }
     const myIndex = getMyPlayerIndex()
@@ -125,81 +132,115 @@ export const useGameStore = defineStore('game', () => {
     }
     
     isProcessingAITurn = true
-    const delay = 1500 + Math.random() * 2000
     
     setTimeout(() => {
-      if (!game.value) return
+      if (!game.value) {
+        isProcessingAITurn = false
+        return
+      }
       
       const currentState = game.value.getGameState()
-      if (!currentState) return
+      if (!currentState) {
+        isProcessingAITurn = false
+        return
+      }
       
       const currentPlayerIndex = currentState.currentPlayerIndex
       if (currentPlayerIndex < 0 || currentPlayerIndex >= players.value.length) {
+        isProcessingAITurn = false
         return
       }
       
       const player = players.value[currentPlayerIndex]
       
       if (!player || !player.isAI) {
+        isProcessingAITurn = false
         return
       }
       
       try {
         if (currentState.gameState === 'selecting_trump') {
-          const ai = new AIPlayer(player.difficulty || 'medium')
-          const availableSuits = ['hearts', 'diamonds', 'clubs', 'spades']
-          const trump = ai.selectTrump(player.hand || [], availableSuits)
-          const result = game.value.selectTrump(trump, currentPlayerIndex)
-          if (result) {
-            setTimeout(() => {
-              processAITurn()
-            }, 1500)
-          }
+          setTimeout(() => {
+            const ai = new AIPlayer(player.difficulty || 'medium')
+            const availableSuits = ['hearts', 'diamonds', 'clubs', 'spades']
+            const trump = ai.selectTrump(player.hand || [], availableSuits)
+            const result = game.value.selectTrump(trump, currentPlayerIndex)
+            if (result) {
+              setTimeout(() => {
+                isProcessingAITurn = false
+                processAITurn()
+              }, 2500)
+            } else {
+              isProcessingAITurn = false
+            }
+          }, 1800)
         } else if (currentState.gameState === 'playing') {
           if (!player.hand || player.hand.length === 0) {
+            isProcessingAITurn = false
             return
           }
           
-          const ai = new AIPlayer(player.difficulty || 'medium')
-          const trickArray = currentState.currentTrick || []
-          const card = ai.playCard(
-            player.hand || [],
-            trickArray,
-            currentState.trumpSuit,
-            player.difficulty || 'medium'
-          )
-          
-          if (!card || !card.id) {
-            return
-          }
-          
-          const result = game.value.playCard(card.id, currentPlayerIndex)
-          
-          if (result && result.success) {
-            if (result.trickComplete && !result.roundComplete && !result.mendikot) {
-              setTimeout(() => {
-                processAITurn()
-              }, 5500)
-            } else if (!result.trickComplete) {
-              setTimeout(() => {
-                processAITurn()
-              }, 1200)
+          setTimeout(() => {
+            const ai = new AIPlayer(player.difficulty || 'medium')
+            const trickArray = currentState.currentTrick || []
+            const card = ai.playCard(
+              player.hand || [],
+              trickArray,
+              currentState.trumpSuit,
+              player.difficulty || 'medium'
+            )
+            
+            if (!card || !card.id) {
+              isProcessingAITurn = false
+              return
             }
-          } else if (result && result.canRevealTrump) {
-            const revealResult = game.value.revealTrump(currentPlayerIndex)
-            if (revealResult && revealResult.success) {
+            
+            const result = game.value.playCard(card.id, currentPlayerIndex)
+            
+            if (result && result.success) {
               setTimeout(() => {
-                processAITurn()
-              }, 1500)
+                if (result.trickComplete) {
+                  setTimeout(() => {
+                    isProcessingAITurn = false
+                    const nextState = game.value.getGameState()
+                    if (nextState && nextState.currentPlayerIndex >= 0) {
+                      const nextPlayer = players.value[nextState.currentPlayerIndex]
+                      if (nextPlayer && nextPlayer.isAI) {
+                        setTimeout(() => {
+                          processAITurn()
+                        }, 2000)
+                      }
+                    }
+                  }, 4000)
+                } else {
+                  setTimeout(() => {
+                    isProcessingAITurn = false
+                    const nextState = game.value.getGameState()
+                    if (nextState && nextState.currentPlayerIndex >= 0) {
+                      const nextPlayer = players.value[nextState.currentPlayerIndex]
+                      if (nextPlayer && nextPlayer.isAI) {
+                        setTimeout(() => {
+                          processAITurn()
+                        }, 2800)
+                      }
+                    }
+                  }, 2200)
+                }
+              }, 600)
+            } else {
+              isProcessingAITurn = false
             }
-          }
+          }, 2000 + Math.random() * 1000) // AI thinking time (2-3 seconds) - shows "thinking" indicator
+        } else {
+          isProcessingAITurn = false
         }
       } catch (error) {
-      } finally {
+        console.error('AI turn error:', error)
         isProcessingAITurn = false
       }
-    }, delay)
+    }, 1000) // Initial delay before AI starts (shows turn indicator)
   }
+  
 
   function resetGame() {
     if (game.value) {
