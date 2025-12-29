@@ -171,6 +171,9 @@ export class MindiGame {
       const trickWinner = this.currentTrick[winnerIndex].playerIndex
       const winnerTeam = this.getTeamIndex(trickWinner)
       
+      // Save the completed trick before clearing it
+      const completedTrick = [...this.currentTrick]
+      
       this.trickHistory.push({
         cards: this.currentTrick.map(t => t.card),
         winner: trickWinner,
@@ -186,13 +189,17 @@ export class MindiGame {
       this.teamScores[winnerTeam]++
       
       if (this.teamTens[winnerTeam] === 4) {
+        this.currentPlayerIndex = trickWinner
+        this.currentTrick = []
         this.gameState = 'mendikot'
-        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, mendikot: true, roundComplete: true }
+        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, mendikot: true, roundComplete: true, completedTrick: completedTrick }
       }
       
       if (this.teamScores[winnerTeam] === 13) {
+        this.currentPlayerIndex = trickWinner
+        this.currentTrick = []
         this.gameState = 'whitewash'
-        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, whitewash: true, roundComplete: true }
+        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, whitewash: true, roundComplete: true, completedTrick: completedTrick }
       }
       
       this.currentPlayerIndex = trickWinner
@@ -211,10 +218,10 @@ export class MindiGame {
         } else {
           this.dealerIndex = (this.dealerIndex + 1) % this.players.length
         }
-        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, roundComplete: true, roundWinner: roundWinner }
+        return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, roundComplete: true, roundWinner: roundWinner, completedTrick: completedTrick }
       }
       
-      return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam }
+      return { success: true, trickComplete: true, winner: trickWinner, winnerTeam: winnerTeam, completedTrick: completedTrick }
     }
     
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length
