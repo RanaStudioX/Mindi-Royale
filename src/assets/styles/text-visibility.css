@@ -1,0 +1,186 @@
+.text-muted,
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+body,
+body * {
+  color: inherit;
+}
+
+p,
+span:not(.badge):not(.btn *),
+div:not(.btn):not(.badge):not(.card-back-pattern),
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+}
+
+.glass-panel,
+.glass-panel * {
+  color: var(--text-primary) !important;
+}
+
+.glass-panel p,
+.glass-panel span:not(.badge):not(.btn *),
+.glass-panel div:not(.btn):not(.badge):not(.card-back-pattern),
+.glass-panel h1,
+.glass-panel h2,
+.glass-panel h3,
+.glass-panel h4,
+.glass-panel h5,
+.glass-panel h6 {
+  color: var(--text-primary) !important;
+}
+
+.option-description,
+.option-title,
+.player-name,
+.empty-slot,
+.waiting-message,
+.form-label,
+.room-code-header h4,
+.room-code-header small,
+.url-display,
+.code-display,
+.notification-message,
+.alert-message,
+.welcome-content p,
+.welcome-info-card,
+.join-room-content p,
+.join-room-header p {
+  color: var(--text-primary) !important;
+}
+
+.option-description {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.empty-slot {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.waiting-message {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.room-code-header small,
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.url-display {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.modal-content,
+.modal-content * {
+  color: var(--text-primary) !important;
+}
+
+.modal-content h3,
+.modal-content p,
+.modal-content label,
+.modal-content span:not(.badge):not(.btn *) {
+  color: var(--text-primary) !important;
+}
+
+.alert {
+  color: var(--text-primary) !important;
+}
+
+.alert * {
+  color: inherit !important;
+}
+
+.alert-danger {
+  color: #ffcccc !important;
+}
+
+.alert-danger * {
+  color: #ffcccc !important;
+}
+
+.alert-info {
+  color: #cce5ff !important;
+}
+
+.alert-info * {
+  color: #cce5ff !important;
+}
+
+.alert-warning {
+  color: #ffe6cc !important;
+}
+
+.alert-warning * {
+  color: #ffe6cc !important;
+}
+
+.alert-success {
+  color: #ccffcc !important;
+}
+
+.alert-success * {
+  color: #ccffcc !important;
+}
+
+.form-control {
+  color: var(--text-primary) !important;
+}
+
+input,
+textarea,
+select {
+  color: var(--text-primary) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.badge {
+  color: #ffffff !important;
+}
+
+.badge.bg-primary,
+.badge.bg-info,
+.badge.bg-success,
+.badge.bg-warning,
+.badge.bg-danger {
+  color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.lobby-page *,
+.menu-page *,
+.profile-page *,
+.landing-page *,
+.auth-page * {
+  color: inherit;
+}
+
+.lobby-page p,
+.lobby-page span:not(.badge):not(.btn *),
+.lobby-page div:not(.btn):not(.badge),
+.menu-page p,
+.menu-page span:not(.badge):not(.btn *),
+.menu-page div:not(.btn):not(.badge),
+.profile-page p,
+.profile-page span:not(.badge):not(.btn *),
+.profile-page div:not(.btn):not(.badge) {
+  color: var(--text-primary) !important;
+}
+
