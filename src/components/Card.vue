@@ -141,7 +141,6 @@ function onMouseUp(event) {
 }
 
 function onMouseEnter(event) {
-  // Card hover effect handled by CSS
 }
 
 function onMouseMove(event) {
