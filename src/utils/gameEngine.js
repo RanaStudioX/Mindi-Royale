@@ -171,7 +171,6 @@ export class MindiGame {
       const trickWinner = this.currentTrick[winnerIndex].playerIndex
       const winnerTeam = this.getTeamIndex(trickWinner)
       
-      // Save the completed trick before clearing it
       const completedTrick = [...this.currentTrick]
       
       this.trickHistory.push({
