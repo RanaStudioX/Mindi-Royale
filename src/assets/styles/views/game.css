@@ -148,7 +148,6 @@
   position: relative;
 }
 
-/* Advanced floating particles effect */
 .game-board::before {
   content: '';
   position: absolute;
@@ -641,7 +640,6 @@
   }
 }
 
-/* Card play animation */
 .card-play-enter-active {
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1592,7 +1590,6 @@
   }
 }
 
-/* Leave Game Confirmation Modal */
 .leave-confirm-overlay {
   position: fixed;
   top: 0;
@@ -1811,7 +1808,6 @@
   }
 }
 
-/* Alert Modal */
 .alert-modal-overlay {
   position: fixed;
   top: 0;
